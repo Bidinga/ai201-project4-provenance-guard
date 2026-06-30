@@ -62,16 +62,32 @@ Thresholds:
 | `0.31` to `0.69` | `uncertain` | Uncertain |
 | `<= 0.30` | `likely_human` | High-confidence human |
 
-Example calibration from local tests:
+Example calibration (live Groq `llama-3.3-70b-versatile` runs):
 
-| Input type | LLM score | Stylometric score | AI probability | Result |
-| --- | ---: | ---: | ---: | --- |
-| AI-like policy paragraph | `0.81` | `0.538` | `0.701` | `likely_ai` |
-| Informal ramen review | `0.20` | `0.403` | `0.281` | `likely_human` |
-| Formal academic paragraph | `0.61` | `0.651` | `0.626` | `uncertain` |
-| Lightly edited AI-style paragraph | `0.38` | `0.478` | `0.419` | `uncertain` |
+| Input type | LLM score | Stylometric score | AI probability | Result | Confidence |
+| --- | ---: | ---: | ---: | --- | ---: |
+| Buzzword-heavy AI essay | `0.80` | `0.687` | `0.755` | `likely_ai` | `0.755` |
+| Informal ramen review | `0.23` | `0.403` | `0.299` | `likely_human` | `0.701` |
+| Formal academic paragraph | `0.70` | `0.651` | `0.680` | `uncertain` | `0.640` |
+| Lightly edited AI-style paragraph | `0.30` | `0.478` | `0.371` | `uncertain` | `0.742` |
 
-The wide uncertain band is deliberate because labeling a human writer as AI-generated is the most harmful failure mode for this product.
+**Two contrasting examples (required):**
+
+- **High-confidence:** the buzzword-heavy AI essay scores `ai_probability = 0.755`
+  → `likely_ai` with confidence `0.755`. Both signals agree (LLM `0.80`,
+  stylometric `0.687`), so the system commits to a directional verdict.
+- **Lower-confidence:** the formal academic paragraph scores
+  `ai_probability = 0.680` → `uncertain` with confidence `0.640`. It sits just
+  below the `0.70` AI threshold and the signals only partly agree, so the system
+  declines to label it and reports its lowest confidence of the set.
+
+The wide uncertain band is deliberate because labeling a human writer as
+AI-generated is the most harmful failure mode for this product.
+
+> Note: the LLM signal is a live model call, so its score can vary by a few
+> hundredths run-to-run (temperature is pinned to 0, but `llama-3.3-70b` is not
+> perfectly deterministic). The stylometric signal is fully deterministic.
+> Regenerate these numbers any time with `python scripts/test_signals.py`.
 
 ## Transparency Labels
 

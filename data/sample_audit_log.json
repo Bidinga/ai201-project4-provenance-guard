@@ -1,69 +1,83 @@
 {
   "entries": [
     {
-      "event_type": "classification",
-      "content_id": "demo-ai-001",
-      "creator_id": "test-user-1",
-      "timestamp": "2026-06-28T22:31:10.123Z",
-      "attribution": "likely_ai",
-      "confidence": 0.701,
-      "ai_probability": 0.701,
-      "label_variant": "high_confidence_ai",
-      "signals": {
-        "llm_classifier": {
-          "score": 0.81,
-          "details": {
-            "provider": "local_fallback",
-            "phrase_hits": 4
-          }
-        },
-        "stylometric_heuristics": {
-          "score": 0.538,
-          "details": {
-            "sentence_count": 3,
-            "word_count": 38
-          }
-        }
-      },
-      "status": "classified"
+      "appeal_reasoning": "I wrote this for a corporate blog and edited it heavily by hand. The formal tone is my professional voice, not AI generation.",
+      "content_id": "538355ee-9735-4c8b-bf65-c055b4f07139",
+      "creator_id": "writer-meadow-42",
+      "event_type": "appeal",
+      "original_ai_probability": 0.755,
+      "original_attribution": "likely_ai",
+      "original_confidence": 0.755,
+      "status": "under_review",
+      "timestamp": "2026-06-30T03:29:30.284751Z"
     },
     {
-      "event_type": "classification",
-      "content_id": "demo-human-001",
-      "creator_id": "test-user-2",
-      "timestamp": "2026-06-28T22:32:44.812Z",
+      "ai_probability": 0.299,
       "attribution": "likely_human",
-      "confidence": 0.748,
-      "ai_probability": 0.252,
+      "confidence": 0.701,
+      "content_id": "4b17f9b0-ff1a-411f-9049-69ffbb5a0ef4",
+      "creator_id": "foodie-dan-11",
+      "event_type": "classification",
+      "label_text": "Transparency notice: This work shows strong signs of human authorship. No AI-generation label is being applied based on the current analysis.",
       "label_variant": "high_confidence_human",
       "signals": {
         "llm_classifier": {
-          "score": 0.18,
           "details": {
-            "provider": "local_fallback",
-            "human_marker_hits": 3
-          }
+            "provider": "groq",
+            "rationale": "informal language and personal experience suggest human authorship"
+          },
+          "score": 0.23
         },
         "stylometric_heuristics": {
-          "score": 0.36,
           "details": {
+            "avg_sentence_length": 11.0,
+            "first_person_rate": 0.073,
+            "punctuation_density": 0.018,
             "sentence_count": 5,
+            "sentence_length_stddev": 6.72,
+            "type_token_ratio": 0.873,
             "word_count": 55
-          }
+          },
+          "score": 0.403
         }
       },
-      "status": "classified"
+      "status": "classified",
+      "text": "ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better. probably won't go back unless someone drags me there",
+      "timestamp": "2026-06-30T03:29:30.278494Z"
     },
     {
-      "event_type": "appeal",
-      "content_id": "demo-ai-001",
-      "creator_id": "test-user-1",
-      "timestamp": "2026-06-28T22:35:01.409Z",
-      "status": "under_review",
-      "appeal_reasoning": "I wrote this myself from personal experience; my style is formal because English is not my first language.",
-      "original_attribution": "likely_ai",
-      "original_confidence": 0.701,
-      "original_ai_probability": 0.701
+      "ai_probability": 0.755,
+      "attribution": "likely_ai",
+      "confidence": 0.755,
+      "content_id": "538355ee-9735-4c8b-bf65-c055b4f07139",
+      "creator_id": "writer-meadow-42",
+      "event_type": "classification",
+      "label_text": "Transparency notice: This work shows strong signs of AI generation. We are labeling it as likely AI-generated so readers have context. Creators can appeal this decision if it does not reflect how the work was made.",
+      "label_variant": "high_confidence_ai",
+      "signals": {
+        "llm_classifier": {
+          "details": {
+            "provider": "groq",
+            "rationale": "Overly formal tone, repetitive use of buzzwords, and a lack of personal touch or nuance suggest AI generation."
+          },
+          "score": 0.8
+        },
+        "stylometric_heuristics": {
+          "details": {
+            "avg_sentence_length": 25.0,
+            "first_person_rate": 0.0,
+            "punctuation_density": 0.07,
+            "sentence_count": 4,
+            "sentence_length_stddev": 4.06,
+            "type_token_ratio": 0.8,
+            "word_count": 100
+          },
+          "score": 0.687
+        }
+      },
+      "status": "classified",
+      "text": "In today's rapidly evolving digital landscape, artificial intelligence has emerged as a transformative force that is fundamentally reshaping the way organizations operate across every sector of the global economy. It is important to note that the integration of these advanced technologies offers numerous benefits, including enhanced efficiency, improved decision-making capabilities, and the streamlining of complex operational workflows. Furthermore, stakeholders across various industries must carefully consider the ethical implications associated with the responsible deployment of these powerful systems. Ultimately, a collaborative and multifaceted approach is essential to ensuring that the benefits of this paradigm shift are equitably distributed throughout society.",
+      "timestamp": "2026-06-30T03:29:29.858705Z"
     }
   ]
 }
