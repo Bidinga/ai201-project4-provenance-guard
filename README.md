@@ -2,6 +2,10 @@
 
 Provenance Guard is a Flask backend that creative platforms can use to analyze text submissions, return an attribution result with confidence, show a reader-facing transparency label, and handle creator appeals.
 
+## 🎥 Walkthrough
+
+[Watch the project walkthrough on Loom](https://www.loom.com/share/3c2602405ea2487d84485ca9dbe2b30d)
+
 ## Quick Start
 
 ```bash
