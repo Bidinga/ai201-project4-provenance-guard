@@ -32,6 +32,22 @@ def create_app(test_config: dict | None = None) -> Flask:
         storage_uri=app.config["RATELIMIT_STORAGE_URI"],
     )
 
+    @app.get("/")
+    def index():
+        return (
+            "<h1>Provenance Guard</h1>"
+            "<p>Multi-signal AI content attribution API. This is a JSON API, not a website.</p>"
+            "<ul>"
+            "<li><b>POST /submit</b> &mdash; classify text "
+            "<code>{text, creator_id}</code> (use curl)</li>"
+            "<li><b>POST /appeal</b> &mdash; contest a classification "
+            "<code>{content_id, creator_reasoning}</code> (use curl)</li>"
+            "<li><a href='/log'><b>GET /log</b></a> &mdash; recent audit-log entries</li>"
+            "<li><a href='/health'><b>GET /health</b></a> &mdash; health check</li>"
+            "</ul>"
+            "<p>See the README for example curl commands.</p>"
+        )
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"})
