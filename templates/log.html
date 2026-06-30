@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Audit Log · Provenance Guard</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #1a1d27; --line: #2a2e3c; --txt: #e6e8ee;
+    --muted: #9aa0ad; --accent: #6ea8fe;
+    --ai: #ff6b6b; --human: #51cf66; --uncertain: #ffd43b; --appeal: #b197fc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--txt); line-height: 1.5;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  a { color: var(--accent); text-decoration: none; }
+  .bar { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; }
+  .stat .v { font-size: 20px; font-weight: 700; }
+  .stat .n { font-size: 12px; color: var(--muted); }
+  .event { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .event.appeal { border-left: 4px solid var(--appeal); }
+  .event.classification { border-left: 4px solid var(--accent); }
+  .top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+  .badge.likely_ai { background: rgba(255,107,107,.15); color: var(--ai); }
+  .badge.likely_human { background: rgba(81,207,102,.15); color: var(--human); }
+  .badge.uncertain { background: rgba(255,212,59,.15); color: var(--uncertain); }
+  .badge.event { background: rgba(177,151,252,.15); color: var(--appeal); }
+  .ts { font-size: 12px; color: var(--muted); }
+  .body { margin-top: 10px; font-size: 14px; }
+  .kv { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; }
+  .kv span b { color: var(--muted); font-weight: 500; }
+  .text { margin-top: 10px; padding: 10px 12px; background: #0c0e14; border-radius: 8px; font-size: 13px; color: #c7ccd6; }
+  .reason { margin-top: 10px; padding: 10px 12px; background: rgba(177,151,252,.08); border-radius: 8px; font-size: 13px; }
+  .cid { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📜 Audit Log</h1>
+  <p class="sub"><a href="/">← Back to analyzer</a> · Every classification and appeal, newest first. <a href="/log" target="_blank">Raw JSON</a></p>
+
+  <div class="bar">
+    <div class="stat"><div class="v">{{ entries|length }}</div><div class="n">events shown</div></div>
+    <div class="stat"><div class="v">{{ entries|selectattr('event_type','equalto','classification')|list|length }}</div><div class="n">classifications</div></div>
+    <div class="stat"><div class="v">{{ entries|selectattr('event_type','equalto','appeal')|list|length }}</div><div class="n">appeals</div></div>
+  </div>
+
+  {% if not entries %}
+    <div class="empty">No events yet. Analyze some text on the <a href="/">home page</a> first.</div>
+  {% endif %}
+
+  {% for e in entries %}
+  <div class="event {{ e.event_type }}">
+    <div class="top">
+      <div>
+        {% if e.event_type == 'classification' %}
+          <span class="badge {{ e.attribution }}">{{ e.attribution }}</span>
+        {% else %}
+          <span class="badge event">APPEAL FILED</span>
+          <span class="badge {{ e.original_attribution }}">was: {{ e.original_attribution }}</span>
+        {% endif %}
+      </div>
+      <div class="ts">{{ e.timestamp }}</div>
+    </div>
+
+    {% if e.event_type == 'classification' %}
+      <div class="kv">
+        <span><b>confidence:</b> {{ e.confidence }}</span>
+        <span><b>AI prob:</b> {{ e.ai_probability }}</span>
+        <span><b>LLM:</b> {{ e.signals.llm_classifier.score }}</span>
+        <span><b>stylometric:</b> {{ e.signals.stylometric_heuristics.score }}</span>
+        <span><b>status:</b> {{ e.status }}</span>
+      </div>
+      {% if e.text %}<div class="text">"{{ e.text[:240] }}{% if e.text|length > 240 %}…{% endif %}"</div>{% endif %}
+    {% else %}
+      <div class="kv">
+        <span><b>original confidence:</b> {{ e.original_confidence }}</span>
+        <span><b>new status:</b> {{ e.status }}</span>
+        <span><b>creator:</b> {{ e.creator_id }}</span>
+      </div>
+      <div class="reason"><b>Creator's reasoning:</b> "{{ e.appeal_reasoning }}"</div>
+    {% endif %}
+    <div class="cid" style="margin-top:8px;">content_id: {{ e.content_id }}</div>
+  </div>
+  {% endfor %}
+</div>
+</body>
+</html>

@@ -99,6 +99,10 @@ def create_app(test_config: dict | None = None) -> Flask:
             parsed_limit = 25
         return jsonify({"entries": store.recent_events(parsed_limit)})
 
+    @app.get("/logs")
+    def logs_view():
+        return render_template("log.html", entries=store.recent_events(50))
+
     return app
 
 
