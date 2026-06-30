@@ -1,0 +1,69 @@
+{
+  "entries": [
+    {
+      "event_type": "classification",
+      "content_id": "demo-ai-001",
+      "creator_id": "test-user-1",
+      "timestamp": "2026-06-28T22:31:10.123Z",
+      "attribution": "likely_ai",
+      "confidence": 0.701,
+      "ai_probability": 0.701,
+      "label_variant": "high_confidence_ai",
+      "signals": {
+        "llm_classifier": {
+          "score": 0.81,
+          "details": {
+            "provider": "local_fallback",
+            "phrase_hits": 4
+          }
+        },
+        "stylometric_heuristics": {
+          "score": 0.538,
+          "details": {
+            "sentence_count": 3,
+            "word_count": 38
+          }
+        }
+      },
+      "status": "classified"
+    },
+    {
+      "event_type": "classification",
+      "content_id": "demo-human-001",
+      "creator_id": "test-user-2",
+      "timestamp": "2026-06-28T22:32:44.812Z",
+      "attribution": "likely_human",
+      "confidence": 0.748,
+      "ai_probability": 0.252,
+      "label_variant": "high_confidence_human",
+      "signals": {
+        "llm_classifier": {
+          "score": 0.18,
+          "details": {
+            "provider": "local_fallback",
+            "human_marker_hits": 3
+          }
+        },
+        "stylometric_heuristics": {
+          "score": 0.36,
+          "details": {
+            "sentence_count": 5,
+            "word_count": 55
+          }
+        }
+      },
+      "status": "classified"
+    },
+    {
+      "event_type": "appeal",
+      "content_id": "demo-ai-001",
+      "creator_id": "test-user-1",
+      "timestamp": "2026-06-28T22:35:01.409Z",
+      "status": "under_review",
+      "appeal_reasoning": "I wrote this myself from personal experience; my style is formal because English is not my first language.",
+      "original_attribution": "likely_ai",
+      "original_confidence": 0.701,
+      "original_ai_probability": 0.701
+    }
+  ]
+}
