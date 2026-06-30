@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
@@ -34,19 +34,7 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     @app.get("/")
     def index():
-        return (
-            "<h1>Provenance Guard</h1>"
-            "<p>Multi-signal AI content attribution API. This is a JSON API, not a website.</p>"
-            "<ul>"
-            "<li><b>POST /submit</b> &mdash; classify text "
-            "<code>{text, creator_id}</code> (use curl)</li>"
-            "<li><b>POST /appeal</b> &mdash; contest a classification "
-            "<code>{content_id, creator_reasoning}</code> (use curl)</li>"
-            "<li><a href='/log'><b>GET /log</b></a> &mdash; recent audit-log entries</li>"
-            "<li><a href='/health'><b>GET /health</b></a> &mdash; health check</li>"
-            "</ul>"
-            "<p>See the README for example curl commands.</p>"
-        )
+        return render_template("index.html")
 
     @app.get("/health")
     def health():

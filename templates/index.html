@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Provenance Guard</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #1a1d27; --line: #2a2e3c; --txt: #e6e8ee;
+    --muted: #9aa0ad; --accent: #6ea8fe;
+    --ai: #ff6b6b; --human: #51cf66; --uncertain: #ffd43b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--txt); line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px; margin-bottom: 20px;
+  }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  textarea, input {
+    width: 100%; background: #0c0e14; color: var(--txt); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  textarea { min-height: 150px; }
+  .row { display: flex; gap: 12px; align-items: end; margin-top: 14px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 180px; }
+  button {
+    background: var(--accent); color: #0b1020; border: 0; border-radius: 10px;
+    padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  button.secondary { background: #2a2e3c; color: var(--txt); }
+  .samples { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .samples button { background: #20242f; color: var(--muted); font-size: 12px; font-weight: 500; padding: 6px 12px; }
+  .hidden { display: none; }
+  .badge {
+    display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700;
+    font-size: 14px; letter-spacing: .3px;
+  }
+  .badge.likely_ai { background: rgba(255,107,107,.15); color: var(--ai); border: 1px solid var(--ai); }
+  .badge.likely_human { background: rgba(81,207,102,.15); color: var(--human); border: 1px solid var(--human); }
+  .badge.uncertain { background: rgba(255,212,59,.15); color: var(--uncertain); border: 1px solid var(--uncertain); }
+  .meter { height: 10px; background: #0c0e14; border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
+  .meter > div { height: 100%; border-radius: 999px; transition: width .4s ease; }
+  .label-box {
+    border-left: 3px solid var(--accent); background: #0c0e14; padding: 12px 14px;
+    border-radius: 8px; margin: 16px 0; font-size: 14px;
+  }
+  .signals { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .signal { flex: 1; min-width: 160px; background: #0c0e14; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .signal .v { font-size: 22px; font-weight: 700; }
+  .signal .n { font-size: 12px; color: var(--muted); }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 14px; word-break: break-all; }
+  .err { color: var(--ai); font-size: 14px; margin-top: 12px; }
+  .ok { color: var(--human); font-size: 14px; margin-top: 12px; }
+  a { color: var(--accent); }
+  h3 { margin: 0 0 12px; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛡️ Provenance Guard</h1>
+  <p class="sub">Paste text to check whether it reads as human-written or AI-generated. Multi-signal analysis with honest uncertainty and a creator appeal path.</p>
+
+  <div class="card">
+    <label for="text">Content to analyze</label>
+    <textarea id="text" placeholder="Paste a poem, story excerpt, or blog post..."></textarea>
+    <div class="samples">
+      <span style="color:var(--muted);font-size:12px;align-self:center;">Try a sample:</span>
+      <button type="button" onclick="fill('ai')">AI-style essay</button>
+      <button type="button" onclick="fill('human')">Human review</button>
+      <button type="button" onclick="fill('formal')">Formal academic</button>
+    </div>
+    <div class="row">
+      <div>
+        <label for="creator">Creator ID</label>
+        <input id="creator" value="demo-user" />
+      </div>
+      <button id="analyze" onclick="analyze()">Analyze</button>
+    </div>
+    <div id="submitErr" class="err hidden"></div>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div id="badge"></div>
+    <div class="meter"><div id="meterFill"></div></div>
+    <div id="confLine" style="font-size:13px;color:var(--muted);"></div>
+
+    <div class="label-box">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">TRANSPARENCY LABEL (shown to readers)</div>
+      <div id="labelText"></div>
+    </div>
+
+    <div class="signals">
+      <div class="signal"><div class="v" id="llmScore">–</div><div class="n">LLM signal (semantic)</div></div>
+      <div class="signal"><div class="v" id="styloScore">–</div><div class="n">Stylometric signal (structural)</div></div>
+      <div class="signal"><div class="v" id="aiProb">–</div><div class="n">Combined AI probability</div></div>
+    </div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div id="appealCard" class="card hidden">
+    <h3>Disagree with this result? Appeal it.</h3>
+    <label for="reason">Why do you believe this classification is wrong?</label>
+    <textarea id="reason" style="min-height:90px;" placeholder="e.g. I wrote this myself; my formal tone is my professional voice, not AI."></textarea>
+    <div class="row">
+      <button class="secondary" id="appealBtn" onclick="appeal()">Submit appeal</button>
+    </div>
+    <div id="appealMsg" class="ok hidden"></div>
+  </div>
+
+  <p class="sub" style="text-align:center;"><a href="/log" target="_blank">View audit log (JSON)</a> · <a href="/health" target="_blank">Health</a></p>
+</div>
+
+<script>
+const SAMPLES = {
+  ai: "In today's rapidly evolving digital landscape, artificial intelligence has emerged as a transformative force that is fundamentally reshaping how organizations operate. It is important to note that the integration of these technologies offers numerous benefits, including enhanced efficiency and improved decision-making. Furthermore, stakeholders across various sectors must carefully consider the ethical implications of responsible deployment.",
+  human: "ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better. probably won't go back unless someone drags me there",
+  formal: "The relationship between monetary policy and asset price inflation has been extensively studied in the literature. Central banks face a fundamental tension between their mandate for price stability and the unintended consequences of prolonged low interest rates on equity and real estate valuations."
+};
+function fill(k){ document.getElementById('text').value = SAMPLES[k]; }
+
+let currentId = null;
+const COLOR = { likely_ai: '#ff6b6b', likely_human: '#51cf66', uncertain: '#ffd43b' };
+const TITLE = { likely_ai: '⚠️ Likely AI-generated', likely_human: '✍️ Likely human-written', uncertain: '❓ Uncertain origin' };
+
+async function analyze(){
+  const text = document.getElementById('text').value.trim();
+  const creator_id = document.getElementById('creator').value.trim() || 'demo-user';
+  const btn = document.getElementById('analyze');
+  const err = document.getElementById('submitErr');
+  err.classList.add('hidden');
+  if (!text){ showErr(err, 'Please enter some text.'); return; }
+  btn.disabled = true; btn.textContent = 'Analyzing…';
+  try {
+    const res = await fetch('/submit', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, creator_id })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      showErr(err, (res.status===429 ? 'Rate limit reached — slow down. ' : '') + (data.error || 'Request failed'));
+      return;
+    }
+    render(data);
+  } catch(e){
+    showErr(err, 'Could not reach the server. Is it running?');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Analyze';
+  }
+}
+
+function showErr(el, msg){ el.textContent = msg; el.classList.remove('hidden'); }
+
+function render(d){
+  currentId = d.content_id;
+  const attr = d.attribution;
+  const badge = document.getElementById('badge');
+  badge.innerHTML = '<span class="badge '+attr+'">'+TITLE[attr]+'</span>';
+  const pct = Math.round(d.confidence*100);
+  const fill = document.getElementById('meterFill');
+  fill.style.width = pct+'%'; fill.style.background = COLOR[attr];
+  document.getElementById('confLine').textContent = 'Confidence: '+pct+'%  ·  AI probability: '+d.ai_probability;
+  document.getElementById('labelText').textContent = d.label;
+  document.getElementById('llmScore').textContent = d.signals.llm_classifier.score;
+  document.getElementById('styloScore').textContent = d.signals.stylometric_heuristics.score;
+  document.getElementById('aiProb').textContent = d.ai_probability;
+  document.getElementById('meta').textContent = 'content_id: '+d.content_id+'  ·  status: '+d.status;
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('appealCard').classList.remove('hidden');
+  document.getElementById('appealMsg').classList.add('hidden');
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+async function appeal(){
+  if (!currentId) return;
+  const reason = document.getElementById('reason').value.trim();
+  const msg = document.getElementById('appealMsg');
+  const btn = document.getElementById('appealBtn');
+  if (!reason){ msg.className='err'; msg.textContent='Please explain why you are appealing.'; msg.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    const res = await fetch('/appeal', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ content_id: currentId, creator_reasoning: reason })
+    });
+    const data = await res.json();
+    msg.classList.remove('hidden');
+    if (res.ok){
+      msg.className='ok';
+      msg.textContent = '✓ '+data.message+' Status is now "'+data.status+'". Logged in the audit trail.';
+    } else {
+      msg.className='err'; msg.textContent = data.error || 'Appeal failed';
+    }
+  } catch(e){
+    msg.className='err'; msg.classList.remove('hidden'); msg.textContent='Could not reach the server.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Submit appeal';
+  }
+}
+</script>
+</body>
+</html>

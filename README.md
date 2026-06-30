@@ -20,6 +20,15 @@ cp .env.example .env
 
 Without `GROQ_API_KEY`, the LLM classifier uses a deterministic local fallback so the project can still run and be graded.
 
+### Web interface
+
+Once the server is running, open **http://localhost:5000** (or `:5001` if macOS
+AirPlay holds port 5000) in a browser for a built-in UI: paste or load a sample,
+click **Analyze**, and see the attribution badge, a color-coded confidence meter,
+the reader-facing transparency label, the individual signal scores, and an
+inline **appeal** form. The page calls the same `/submit` and `/appeal` JSON
+endpoints described below, so it is a thin client over the API.
+
 ## Architecture Overview
 
 A submission enters through `POST /submit` with `text` and `creator_id`. The API validates the payload, runs an LLM-style classifier and a stylometric heuristic classifier, combines the two scores into an AI probability and confidence score, maps that result to a transparency label, writes a structured SQLite audit event, and returns the decision with a `content_id`.
